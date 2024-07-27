@@ -8,9 +8,14 @@
 
    Credentials noted down:
 	From Azure deployment settings:
-		ftps://waws-prod-ma1-015.ftp.azurewebsites.windows.net/site/wwwroot = FTPS endpoint
-		REDACTED / REDACTED for deployment center
+		ftps endpoint: ftps://waws-prod-ma1-015.ftp.azurewebsites.windows.net/site/wwwroot
+		application scope:
+		IMSAPI\$IMSAPI
+		blnBTPpSeB6NovN0jkywhKD3kbogqR067KZPmFo7vgdSdSdvkicgmdxp1fnN
 
+		user scope:
+		IOMSuser
+		IOMSioms1!
 	Used postman to test the azure deployed api
 	https://imsapi-h3awcbabeke9bqfs.southindia-01.azurewebsites.net/api/IOMS/CreateInventoryItem?Name=randomName&Description=descr&Unit=g&MinUnit=100&PricePerUnit=1.5	
 	post.

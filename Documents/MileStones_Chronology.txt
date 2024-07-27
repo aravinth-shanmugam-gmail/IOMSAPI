@@ -1,0 +1,21 @@
+27July2024:
+   * Fixed this as the final project setup. API tested locally to insert a new inventory
+   eg., record in the database.
+   id/name/description/unit/minUnit/priceperunit (note id is auto increment column)
+   4	inv1	inventory1	g	6	67.00
+   * Used API to insert this new record. Used Swagger to test the API.
+   * Created IMSAPI an api app in azure.
+
+   Credentials noted down:
+	From Azure deployment settings:
+		ftps://waws-prod-ma1-015.ftp.azurewebsites.windows.net/site/wwwroot = FTPS endpoint
+		REDACTED / REDACTED for deployment center
+
+	Used postman to test the azure deployed api
+	https://imsapi-h3awcbabeke9bqfs.southindia-01.azurewebsites.net/api/IOMS/CreateInventoryItem?Name=randomName&Description=descr&Unit=g&MinUnit=100&PricePerUnit=1.5	
+	post.
+
+	Note: the publishing done from vs itself via a publish profile.
+	And used publish using zip deploy method.
+
+	Todo: Learn how it was happening behind the screens. How the code was deployed from vs to azure, and from git to azure.

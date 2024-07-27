@@ -3,9 +3,6 @@
     "mssql1": {
       "type": "mssql",
       "connectionId": "ConnectionStrings:IOMSConnString"
-    },
-    "apis1": {
-      "type": "apis"
     }
   }
 }

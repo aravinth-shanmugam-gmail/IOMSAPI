@@ -27,7 +27,7 @@ create table CourierStatus
 (status varchar(20) primary key, description varchar(50));
 
 create table InventoryItem
-(id int identity(1,1) primary key, name varchar(50), description varchar(200), unit varchar(5) FOREIGN key references ItemUnit(unit), minUnit int, pricePerUnit decimal(10,2), imageFilePath varchar(200) null);
+(id int identity(1,1) primary key, name varchar(50), description varchar(200), unit varchar(5) FOREIGN key references ItemUnit(unit), minUnit int, pricePerUnit decimal(10,2));
 
 create table SalesOrder
 (id int identity(1,1) primary key, createdate datetime default SYSDATETIME(), statusdate datetime default SYSDATETIME(), orderstatus varchar(20) FOREIGN key references OrderStatus(status), orderamount decimal (10,2), Discount decimal(10,2), notes varchar(500));

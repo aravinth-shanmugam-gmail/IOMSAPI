@@ -24,12 +24,3 @@
 	And used publish using zip deploy method.
 
 	Todo: Learn how it was happening behind the screens. How the code was deployed from vs to azure, and from git to azure.
-
-	
-15Aug2024:
-   * The API is still running in azure. Need to connect it via postman/other tool to check it. - started with ADO repository for the web app which is the consumer.
-	*	https://imsapi-h3awcbabeke9bqfs.southindia-01.azurewebsites.net/ = API URL
-
-https://dev.azure.com/aravinthshanmugam0099/IOMS/_git/Web_InventoryMgr
-
-Server=tcp:ioms.database.windows.net,1433;Initial Catalog=IOMSDatabase;Persist Security Info=False;User ID=aravinth;Password=GlenKeane1!;

@@ -10,5 +10,4 @@ public class InventoryItem
     public string Unit { get; set; }
     public int MinUnit { get; set; }
     public decimal PricePerUnit { get; set; }
-    public string ImageFileLocation { get; set; }
 }

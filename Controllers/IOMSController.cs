@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Azure.Storage.Blobs;
-using Microsoft.Extensions.Configuration;
-
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace IOMSAPI.Controllers
 {
@@ -10,43 +10,10 @@ namespace IOMSAPI.Controllers
     public class InventoryController : ControllerBase
     {
         private readonly IOMSContext _context;
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly string _containerName = "images";
-        public InventoryController(IOMSContext context, IConfiguration configuration)
+
+        public InventoryController(IOMSContext context)
         {
             _context = context;
-            _blobServiceClient = new BlobServiceClient(configuration.GetConnectionString("AzureBlobStorage"));
-        }
-
-        // POST: api/Inventory/UploadImage/5
-        [HttpPost("UploadImage/{id}")]
-        public async Task<ActionResult> UploadImage(int id, IFormFile image)
-        {
-            if (image == null || (image.ContentType != "image/jpeg" && image.ContentType != "image/jpg" && image.ContentType != "image/png"))
-            {
-                return BadRequest("Invalid image format. Only JPEG and PNG are supported.");
-            }
-
-            var item = _context.InventoryItems.Find(id);
-            if (item == null)
-            {
-                return NotFound("Inventory item not found.");
-            }
-
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            await containerClient.CreateIfNotExistsAsync();
-
-            var blobClient = containerClient.GetBlobClient(Guid.NewGuid().ToString() + Path.GetExtension(image.FileName));
-            using (var stream = image.OpenReadStream())
-            {
-                await blobClient.UploadAsync(stream, true);
-            }
-
-            item.ImageFileLocation = blobClient.Uri.ToString();
-            _context.InventoryItems.Update(item);
-            _context.SaveChanges();
-
-            return Ok("Image uploaded and URL updated successfully.");
         }
 
         // GET: api/Inventory/Get/5
@@ -118,10 +85,7 @@ namespace IOMSAPI.Controllers
             item.Unit = updatedItem.Unit;
             item.MinUnit = updatedItem.MinUnit;
             item.PricePerUnit = updatedItem.PricePerUnit;
-            if (!string.IsNullOrEmpty(updatedItem.ImageFileLocation))
-            {
-                item.ImageFileLocation = updatedItem.ImageFileLocation;
-            }
+
             _context.InventoryItems.Update(item);
             _context.SaveChanges();
             return Ok("Inventory item updated successfully.");

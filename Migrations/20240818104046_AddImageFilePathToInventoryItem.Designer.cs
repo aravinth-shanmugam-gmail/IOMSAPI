@@ -36,7 +36,6 @@ namespace IOMSAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageFileLocation")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MinUnit")

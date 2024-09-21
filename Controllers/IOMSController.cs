@@ -42,7 +42,7 @@ namespace IOMSAPI.Controllers
                 await blobClient.UploadAsync(stream, true);
             }
 
-            item.ImageFileLocation = blobClient.Uri.ToString();
+            item.ImageFilePath = blobClient.Uri.ToString();
             _context.InventoryItems.Update(item);
             _context.SaveChanges();
 
@@ -98,6 +98,15 @@ namespace IOMSAPI.Controllers
             return Ok(items);
         }
 
+        // GET: api/Inventory/Dummy
+        [HttpGet("Dummy")]
+        public ActionResult<IEnumerable<InventoryItem>> Dummy()
+        {
+            var items = new List<InventoryItem>();
+            items.Add(new InventoryItem { Id = 29,Description="dummy inventory idtem;" });
+            return Ok(items);
+        }
+
         // PUT: api/Inventory/Edit/5
         [HttpPut("Edit/{id}")]
         public ActionResult Edit(int id, [FromBody] InventoryItem updatedItem)
@@ -118,9 +127,9 @@ namespace IOMSAPI.Controllers
             item.Unit = updatedItem.Unit;
             item.MinUnit = updatedItem.MinUnit;
             item.PricePerUnit = updatedItem.PricePerUnit;
-            if (!string.IsNullOrEmpty(updatedItem.ImageFileLocation))
+            if (!string.IsNullOrEmpty(updatedItem.ImageFilePath))
             {
-                item.ImageFileLocation = updatedItem.ImageFileLocation;
+                item.ImageFilePath = updatedItem.ImageFilePath;
             }
             _context.InventoryItems.Update(item);
             _context.SaveChanges();

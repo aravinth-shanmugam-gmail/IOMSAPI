@@ -8,8 +8,23 @@ drop table SalesOrderDetail;
 drop table SearchColumns;
 drop table SearchOperators;
 
-create table Customer
-(id int identity(1,1) primary key, name varchar(50), addressline varchar(500), state varchar(50), city varchar(60), country varchar(50), zipcode varchar(10), phone1 varchar(12), phone2 varchar(12), email varchar(100));
+CREATE TABLE customer (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    addressline VARCHAR(255),
+    state VARCHAR(255),
+    city VARCHAR(255),
+    country VARCHAR(255),
+    zipcode VARCHAR(20),
+    phone1 VARCHAR(20) NOT NULL UNIQUE,
+    phone2 VARCHAR(20),
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255),
+    oauth_provider VARCHAR(50),
+    oauth_id VARCHAR(255),
+    otp_code VARCHAR(10),
+    otp_expiry DATETIME
+);
 
 create table ItemUnit
 (unit varchar(5) primary key, description varchar(20));

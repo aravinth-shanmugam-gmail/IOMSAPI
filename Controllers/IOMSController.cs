@@ -92,9 +92,15 @@ namespace IOMSAPI.Controllers
 
         // GET: api/Inventory/ListAll
         [HttpGet("ListAll")]
-        public ActionResult<IEnumerable<InventoryItem>> ListAll()
+        public ActionResult<IEnumerable<InventoryItem>> ListAll(string searchText = null)
         {
             var items = _context.InventoryItems.ToList();
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                items = items.Where(item => item.Name.Contains(searchText) || item.Description.Contains(searchText)).ToList();
+            }
+
             return Ok(items);
         }
 

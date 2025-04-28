@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IOMSAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 public class IOMSContext : DbContext
 {
@@ -8,4 +9,7 @@ public class IOMSContext : DbContext
     }
 
     public DbSet<InventoryItem> InventoryItems { get; set; }
+    public DbSet<AdditionalInvImage> AdditionalInvImages { get; set; }
+
+    public DbSet<Customer> Customers { get; set; }
 }

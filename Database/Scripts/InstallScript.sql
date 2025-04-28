@@ -7,6 +7,7 @@ drop table SalesOrder;
 drop table SalesOrderDetail;
 drop table SearchColumns;
 drop table SearchOperators;
+drop table InventoryImages;
 
 CREATE TABLE customer (
     id INT PRIMARY KEY,
@@ -19,11 +20,10 @@ CREATE TABLE customer (
     phone1 VARCHAR(20) NOT NULL UNIQUE,
     phone2 VARCHAR(20),
     email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255),
-    oauth_provider VARCHAR(50),
-    oauth_id VARCHAR(255),
-    otp_code VARCHAR(10),
-    otp_expiry DATETIME
+    passwordhash VARCHAR(255),
+    otpcode VARCHAR(10),
+    otpexpiry DATETIME,
+    status varchar(30) default('registered') not null
 );
 
 create table ItemUnit
@@ -43,6 +43,14 @@ create table CourierStatus
 
 create table InventoryItem
 (id int identity(1,1) primary key, name varchar(50), description varchar(200), unit varchar(5) FOREIGN key references ItemUnit(unit), minUnit int, pricePerUnit decimal(10,2), imageFilePath varchar(200) null);
+
+CREATE TABLE AdditionalInvImage (
+    imageId INT PRIMARY KEY IDENTITY,
+    itemId INT NOT NULL FOREIGN key references InventoryItem(id),
+    imageData VARCHAR(MAX) NOT NULL,
+    imageSortOrder INT null,
+    imageDescription VARCHAR(1000) NULL
+);
 
 create table SalesOrder
 (id int identity(1,1) primary key, createdate datetime default SYSDATETIME(), statusdate datetime default SYSDATETIME(), orderstatus varchar(20) FOREIGN key references OrderStatus(status), orderamount decimal (10,2), Discount decimal(10,2), notes varchar(500));

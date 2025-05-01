@@ -27,7 +27,7 @@ namespace IOMSAPI.Models
         public string? Country { get; set; }
 
         [MaxLength(20)]
-        public string Zipcode { get; set; }
+        public string? Zipcode { get; set; }
 
         [Required]
         [MaxLength(20)]
@@ -44,12 +44,12 @@ namespace IOMSAPI.Models
         public string PasswordHash { get; set; }
         
         [MaxLength(10)]
-        public string OtpCode { get; set; }
+        public string? OtpCode { get; set; }
 
         public DateTime? OtpExpiry { get; set; }
 
         public DateOnly? dob { get; set; }
 
-        public string Status { get; set; }
+        public string? Status { get; set; }
     }
 }

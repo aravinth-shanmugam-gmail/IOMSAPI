@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", policy =>
     {
-        policy.WithOrigins("https://localhost:7234") // Replace with your Razor Pages app URL
+        policy.WithOrigins("https://webshoppingportal20240907172132.azurewebsites.net") // Replace with your Razor Pages app URL
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

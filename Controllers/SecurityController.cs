@@ -10,6 +10,8 @@ using IOMSAPI.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using static IOMSAPI.Controllers.SecurityController;
 
 namespace IOMSAPI.Controllers
 {
@@ -139,12 +141,15 @@ namespace IOMSAPI.Controllers
 
         private string GenerateToken(Customer customer)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here_IOMSAPI_BEING_USED_BY_KAYALININATURALS_IS_THESECRETKEY"));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, customer.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, customer.Id.ToString()),
+                new Claim("CustomerId", customer.Id.ToString()),
+                new Claim("Name", customer.Name),
+                new Claim("Email", customer.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -157,6 +162,108 @@ namespace IOMSAPI.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
+        [HttpPost("AddToCart")]
+        [Authorize] // Ensure the user is authenticated
+        public async Task<ActionResult> AddToCart([FromBody] AddToCartRequest request)
+        {
+            // Get the customer ID from the JWT token
+            var customerId = int.Parse(User.Claims.First(c => c.Type == "CustomerId").Value);
+
+            // Check if the item exists
+            var inventoryItem = await _context.InventoryItems.FindAsync(request.ItemId);
+            if (inventoryItem == null)
+            {
+                return NotFound("Item not found.");
+            }
+
+            // Check if the item is already in the cart
+            var existingCartItem = await _context.Carts
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.ItemId == request.ItemId);
+
+            if (existingCartItem != null)
+            {
+                // Update the quantity if the item is already in the cart
+                existingCartItem.Quantity += request.Quantity;
+            }
+            else
+            {
+                // Add a new cart item
+                var cartItem = new Cart
+                {
+                    CustomerId = customerId,
+                    ItemId = request.ItemId,
+                    Quantity = request.Quantity
+                };
+                _context.Carts.Add(cartItem);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok("Item added to cart successfully.");
+        }
+
+        [HttpDelete("RemoveCartItem")]
+        [Authorize] // Ensure the user is authenticated
+        public async Task<ActionResult> RemoveCartItem([FromBody] RemoveCartItemRequest request)
+        {
+            // Get the customer ID from the JWT token
+            var customerId = int.Parse(User.Claims.First(c => c.Type == "CustomerId").Value);
+
+            // Find the cart item to remove
+            var cartItem = await _context.Carts
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.ItemId == request.ItemId);
+
+            if (cartItem == null)
+            {
+                return NotFound("Item not found in the cart.");
+            }
+
+            // Remove the item from the cart
+            _context.Carts.Remove(cartItem);
+            await _context.SaveChangesAsync();
+
+            return Ok("Item removed from the cart successfully.");
+        }
+
+        [HttpGet("GetCartItems")]
+        [Authorize] // Ensure the user is authenticated
+        public async Task<ActionResult> GetCartItems()
+        {
+            // Get the customer ID from the JWT token
+            var customerId = int.Parse(User.Claims.First(c => c.Type == "CustomerId").Value);
+
+            // Retrieve all cart items for the customer
+            var cartItems = await _context.Carts
+                .Where(c => c.CustomerId == customerId)
+                .Include(c => c.InventoryItem) // Include related InventoryItem details
+                .ToListAsync();
+
+            if (!cartItems.Any())
+            {
+                return NotFound("No items found in the cart.");
+            }
+
+            // Map the cart items to a response model
+            var response = cartItems.Select(c => new
+            {
+                c.Id,
+                c.ItemId,
+                c.InventoryItem.Name,
+                c.InventoryItem.Description,
+                c.InventoryItem.PricePerUnit,
+                c.Quantity
+            });
+
+            return Ok(response);
+        }
+
+
+        public class RemoveCartItemRequest
+        {
+            public int ItemId { get; set; }
+        }
+
 
 
         public class RegisterRequest
@@ -183,6 +290,13 @@ namespace IOMSAPI.Controllers
         {
             public string Email { get; set; }
             public string Password { get; set; }
+        }
+
+        [Authorize]
+        public class AddToCartRequest
+        {
+            public int ItemId { get; set; }
+            public decimal Quantity { get; set; }
         }
     }
 }

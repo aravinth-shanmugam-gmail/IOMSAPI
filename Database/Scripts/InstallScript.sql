@@ -8,6 +8,7 @@ drop table SalesOrderDetail;
 drop table SearchColumns;
 drop table SearchOperators;
 drop table InventoryImages;
+drop table Cart;
 
 CREATE TABLE customer (
     id INT PRIMARY KEY,
@@ -53,10 +54,10 @@ CREATE TABLE AdditionalInvImage (
 );
 
 create table SalesOrder
-(id int identity(1,1) primary key, createdate datetime default SYSDATETIME(), statusdate datetime default SYSDATETIME(), orderstatus varchar(20) FOREIGN key references OrderStatus(status), orderamount decimal (10,2), Discount decimal(10,2), notes varchar(500));
+(id int identity(1,1) primary key, createdate datetime default SYSDATETIME(), customerId int foreign key references customer(id), statusdate datetime default SYSDATETIME(), orderstatus varchar(20) FOREIGN key references OrderStatus(status), orderamount decimal (10,2), Discount decimal(10,2), notes varchar(500));
 
 create table SalesOrderDetail
-(id int identity(1,1) primary key, orderid int foreign key references SalesOrder(id), inventoryid int FOREIGN key references InventoryItem(id), quantity decimal(10,2));
+(id int identity(1,1) primary key, orderid int foreign key references SalesOrder(id), inventoryid int FOREIGN key references InventoryItem(id), itemPrice decimal(10,2), quantity decimal(10,2));
 
 create table SearchColumns
 (id int identity(1,1) primary key, columnName varchar(30));
@@ -64,11 +65,30 @@ create table SearchColumns
 insert into SearchColumns (columnName) values
 ('name'),('state'),('city'),('zipcode');
 
+create table Cart(
+    id INT primary key identity,
+    customerId int not null FOREIGN key REFERENCES Customer(Id),
+    itemId int not null FOREIGN key REFERENCES InventoryItem (id),
+    quantity decimal(10,2)
+);
+
+CREATE TABLE Payment (
+    Id INT PRIMARY KEY IDENTITY,
+    CustomerId INT NOT NULL FOREIGN KEY REFERENCES Customer(Id),
+    RazorpayOrderId VARCHAR(50) NOT NULL,
+    RazorpayPaymentId VARCHAR(50) NULL,
+    RazorpaySignature VARCHAR(100) NULL,
+    Amount DECIMAL(10, 2) NOT NULL,
+    Currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    Status VARCHAR(20) NOT NULL DEFAULT 'CREATED', -- CREATED, CONFIRMED, FAILED
+    CreatedAt DATETIME NOT NULL DEFAULT SYSDATETIME(),
+    ConfirmedAt DATETIME NULL
+);
+
 ---------------------
 
 select * from ItemUnit;
 
 select * from customer;
-
 
 select * from InventoryItem;

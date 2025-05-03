@@ -171,7 +171,7 @@ namespace IOMSAPI.Controllers
 
         // GET: api/Inventory/ListAll
         [HttpGet("ListAll")]
-        public ActionResult<IEnumerable<InventoryItem>> ListAll(string searchText = null)
+        public ActionResult<IEnumerable<InventoryItem>> ListAll(string? searchText = null)
         {
             var items = _context.InventoryItems.ToList();
 

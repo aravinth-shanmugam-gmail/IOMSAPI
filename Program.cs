@@ -44,20 +44,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here_IOMSAPI_BEING_USED_BY_KAYALININATURALS_IS_THESECRETKEY"))
         };
 
-        // Custom logic to check for token in both header and cookie
+        // Simplify token retrieval to only check the Authorization header
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
                 // Check if the token is in the Authorization header
                 var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-                // If not found in the header, check the cookie
-                if (string.IsNullOrEmpty(token) && context.Request.Cookies.ContainsKey("JwtToken"))
-                {
-                    token = context.Request.Cookies["JwtToken"];
-                }
-
                 context.Token = token; // Set the token for validation
                 return Task.CompletedTask;
             }

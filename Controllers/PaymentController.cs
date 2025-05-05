@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Razorpay.Api;
+using Razorpay.Api.Errors;
 
 namespace IOMSAPI.Controllers
 {
@@ -37,52 +39,47 @@ namespace IOMSAPI.Controllers
             // Calculate the total price
             var totalPrice = product.PricePerUnit * request.Quantity;
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-                "Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{RazorpayKey}:{RazorpaySecret}")));
-
-            var payload = new
+            try
             {
-                amount = (int)(totalPrice * 100), // Amount in paise (e.g., ₹1 = 100 paise)
-                currency = "INR",
-                receipt = $"order_rcpt_{Guid.NewGuid()}"
-                //,
-                //payment_capture = 1 // Auto-capture payment
-            };
+                // Initialize Razorpay client
+                var client = new RazorpayClient(RazorpayKey, RazorpaySecret);
 
-            var response = await client.PostAsJsonAsync("https://api.razorpay.com/v1/orders", payload);
-            if (!response.IsSuccessStatusCode)
-            {
-                return BadRequest("Failed to create Razorpay order.");
+                // Create order payload
+                var options = new Dictionary<string, object>
+                {
+                    { "amount", (int)(totalPrice * 100) }, // Amount in paise (e.g., ₹1 = 100 paise)
+                    { "currency", "INR" },
+                    { "receipt", $"order_rcpt_1" }
+                };
+
+                // Create the order
+                var order = client.Order.Create(options);
+
+                // Save the payment details in the database
+                var payment = new Models.Payment
+                {
+                    CustomerId = customerId,
+                    RazorpayOrderId = order["id"].ToString(),
+                    Amount = totalPrice,
+                    Currency = "INR",
+                    Status = "CREATED",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Payments.Add(payment);
+                await _context.SaveChangesAsync();
+
+                // Return the order details to the UI
+                return Ok(new
+                {
+                    OrderId = order["id"].ToString(),
+                    Amount = totalPrice,
+                    Currency = "INR"
+                });
             }
-
-            // Deserialize the response using System.Text.Json
-            var responseData = await response.Content.ReadFromJsonAsync<RazorpayOrderResponse>();
-            if (responseData == null || string.IsNullOrEmpty(responseData.Id))
+            catch (Exception ex)
             {
-                return BadRequest("Invalid response from Razorpay.");
+                return BadRequest($"Failed to create Razorpay order: {ex.Message}");
             }
-
-            // Save the payment details in the database
-            var payment = new Payment
-            {
-                CustomerId = customerId,
-                RazorpayOrderId = responseData.Id,
-                Amount = totalPrice,
-                Currency = "INR",
-                Status = "CREATED",
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.Payments.Add(payment);
-            await _context.SaveChangesAsync();
-
-            // Return the order details to the UI
-            return Ok(new
-            {
-                OrderId = responseData.Id,
-                Amount = totalPrice,
-                Currency = "INR"
-            });
         }
 
 
@@ -115,24 +112,42 @@ namespace IOMSAPI.Controllers
                 return NotFound("Payment record not found.");
             }
 
-            // Verify the payment signature
-            var isValidSignature = VerifySignature(request.OrderId, request.PaymentId, request.Signature);
-            if (!isValidSignature)
+            try
+            {
+                // Initialize Razorpay client
+                var client = new RazorpayClient(RazorpayKey, RazorpaySecret);
+
+                // Verify the payment signature using Razorpay SDK
+                var attributes = new Dictionary<string, string>
+        {
+            { "razorpay_order_id", request.OrderId },
+            { "razorpay_payment_id", request.PaymentId },
+            { "razorpay_signature", request.Signature }
+        };
+
+                // This will throw an exception if the signature is invalid
+                Utils.verifyPaymentSignature(attributes);
+
+                // Update the payment status in the database
+                payment.RazorpayPaymentId = request.PaymentId;
+                payment.RazorpaySignature = request.Signature;
+                payment.Status = "CONFIRMED";
+                payment.ConfirmedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                return Ok("Payment confirmed successfully.");
+            }
+            catch (SignatureVerificationError)
             {
                 // Update the payment status to FAILED in case of an invalid signature
                 payment.Status = "FAILED";
                 await _context.SaveChangesAsync();
                 return BadRequest("Invalid payment signature.");
             }
-
-            // Update the payment status in the database
-            payment.RazorpayPaymentId = request.PaymentId;
-            payment.RazorpaySignature = request.Signature;
-            payment.Status = "CONFIRMED";
-            payment.ConfirmedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            return Ok("Payment confirmed successfully.");
+            catch (Exception ex)
+            {
+                return BadRequest($"An error occurred while confirming the payment: {ex.Message}");
+            }
         }
 
 

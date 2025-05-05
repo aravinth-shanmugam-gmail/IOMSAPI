@@ -86,7 +86,7 @@ namespace IOMSAPI.Controllers
 
         [HttpPost("Login")]
         public async Task<ActionResult> Login([FromBody] LoginRequest request)
-        {
+        {   
             var customer = _context.Customers.FirstOrDefault(c => c.Email == request.Email);
             if (customer == null || !VerifyPassword(request.Password, customer.PasswordHash))
             {

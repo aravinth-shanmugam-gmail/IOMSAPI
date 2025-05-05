@@ -72,7 +72,7 @@ namespace IOMSAPI.Controllers
                 return Ok(new
                 {
                     OrderId = order["id"].ToString(),
-                    Amount = totalPrice,
+                    Amount = (int)(totalPrice * 100),
                     Currency = "INR"
                 });
             }
